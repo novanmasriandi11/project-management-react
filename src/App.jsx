@@ -6,33 +6,25 @@ import SelectProject from "./components/SelectProject";
 
 function App() {
   const [projectsState, setProjectsState] = useState({
-    selectedProject: undefined,
+    selectedProject_id: undefined,
     projects: [],
+    tasks: [],
   });
-
-  function handleSelectProject(id) {
-    setProjectsState((prevState) => {
-      return {
-        ...prevState,
-        selectedProject: id,
-      };
-    });
-  }
 
   function handleAddStartProject() {
     setProjectsState((prevState) => {
       return {
         ...prevState,
-        selectedProject: null,
+        selectedProject_id: null,
       };
     });
   }
 
-  function handleCancelAddProject() {
+  function handleSelectProject(id) {
     setProjectsState((prevState) => {
       return {
         ...prevState,
-        selectedProject: undefined,
+        selectedProject_id: id,
       };
     });
   }
@@ -45,21 +37,76 @@ function App() {
       };
       return {
         ...prevState,
-        selectedProject: undefined,
+        selectedProject_id: undefined,
         projects: [...prevState.projects, newProject],
       };
     });
   }
-  const selected = projectsState.projects.find(
-    (project) => project.id === projectsState.selectedProject
-  );
-  let content = <SelectProject project={selected} />;
 
-  if (projectsState.selectedProject === null) {
+  function handleCancelAddProject() {
+    setProjectsState((prevState) => {
+      return {
+        ...prevState,
+        selectedProject_id: undefined,
+      };
+    });
+  }
+
+  function handleDeleteProject() {
+    setProjectsState((prevState) => {
+      return {
+        ...prevState,
+        selectedProject_id: undefined,
+        projects: prevState.projects.filter(
+          (project) => project.id !== prevState.selectedProject_id
+        ),
+      };
+    });
+  }
+
+  function handleAddTask(taskData) {
+    setProjectsState((prevState) => {
+      const newTask = {
+        taskData: taskData,
+        projectId: prevState.selectedProject_id,
+        id: Math.floor(Math.random() * 100000),
+      };
+
+      return {
+        ...prevState,
+        tasks: [...prevState.tasks, newTask],
+      };
+    });
+  }
+
+  function handleDeleteTask(id) {
+    setProjectsState((prevState) => {
+      return {
+        ...prevState,
+        tasks: prevState.tasks.filter((task) => task.id !== id),
+      };
+    });
+  }
+
+  const selected = projectsState.projects.find(
+    (project) => project.id === projectsState.selectedProject_id
+  );
+
+  let content = (
+    <SelectProject
+      project={selected}
+      onDelete={handleDeleteProject}
+      onAddTask={handleAddTask}
+      onDeleteTask={handleDeleteTask}
+      tasks={projectsState.tasks}
+    />
+  );
+
+  if (projectsState.selectedProject_id === null) {
     content = (
       <NewProject onAdd={handleAddProject} onCancel={handleCancelAddProject} />
     );
-  } else if (projectsState.selectedProject === undefined) {
+  } else if (projectsState.selectedProject_id === undefined) {
     content = <NoneProjectView onStartAddProject={handleAddStartProject} />;
   }
 
@@ -69,6 +116,7 @@ function App() {
         onStartAddProject={handleAddStartProject}
         projects={projectsState.projects}
         onSelectProject={handleSelectProject}
+        selectedProject_id={projectsState.selectedProject_id}
       />
       {content}
     </main>
